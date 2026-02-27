@@ -1,0 +1,9 @@
+com\factus\api\models\Items.class
+com\factus\api\controller\FactusController.class
+com\factus\api\models\Clientes.class
+com\factus\api\config\OauthToken.class
+com\factus\api\config\WebClientConfig.class
+com\factus\api\ApiFactusApplication.class
+com\factus\api\service\OauthService.class
+com\factus\api\config\ApiConfig.class
+com\factus\api\models\Facturas.class

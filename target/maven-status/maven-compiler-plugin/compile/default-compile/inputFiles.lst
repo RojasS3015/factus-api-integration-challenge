@@ -1,0 +1,9 @@
+G:\demo\src\main\java\com\factus\api\ApiFactusApplication.java
+G:\demo\src\main\java\com\factus\api\config\ApiConfig.java
+G:\demo\src\main\java\com\factus\api\config\OauthToken.java
+G:\demo\src\main\java\com\factus\api\config\WebClientConfig.java
+G:\demo\src\main\java\com\factus\api\controller\FactusController.java
+G:\demo\src\main\java\com\factus\api\models\Clientes.java
+G:\demo\src\main\java\com\factus\api\models\Facturas.java
+G:\demo\src\main\java\com\factus\api\models\Items.java
+G:\demo\src\main\java\com\factus\api\service\OauthService.java
