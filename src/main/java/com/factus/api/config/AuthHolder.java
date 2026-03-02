@@ -1,5 +1,7 @@
 package com.factus.api.config;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -8,21 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthHolder {
     
-    private OauthToken currentToken;
+    private final AtomicReference<OauthToken> currentToken = new AtomicReference<>();
 
-    public synchronized void saveToken(OauthToken token){
-        this.currentToken = token;
+    public void saveToken(OauthToken token){
+        this.currentToken.set(token);
     }
 
-    public synchronized String getAccesToken(){
-        return (currentToken != null) ? currentToken.getAccess_token() : null;
+    public String getAccesToken(){
+        OauthToken token = currentToken.get();
+        return (token != null) ? token.getAccess_token() : null;
     }
 
-    public synchronized String getRefreshToken(){
-        return (currentToken != null) ? currentToken.getRefresh_token() : null;
-    }
-
-    public synchronized boolean hasToken(){
-        return currentToken != null;
+    public boolean hasToken(){
+        return currentToken.get() != null;
     }
 }

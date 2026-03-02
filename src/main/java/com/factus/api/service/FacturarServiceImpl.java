@@ -2,7 +2,6 @@ package com.factus.api.service;
 
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.factus.api.models.FacturaRequest;
@@ -12,8 +11,6 @@ import com.factus.api.models.Paises;
 import com.factus.api.models.Tributos;
 import com.factus.api.models.UnidadesDeMedida;
 import com.factus.api.models.VerYfiltrarFacturas;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -42,37 +39,8 @@ public class FacturarServiceImpl {
         return webClient.post()
                 .uri("/v1/bills/validate")
                 .bodyValue(facture)
-                .exchangeToMono(response -> {
-
-                    HttpStatus status = (HttpStatus) response.statusCode();
-
-                    // 🟥 Manejo de errores
-                    if (status.is4xxClientError() || status.is5xxServerError()) {
-                        return response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.out.println("❌ FACTUS ERROR [" + status + "]");
-                                    System.out.println(errorBody);
-                                    return Mono.error(
-                                            new RuntimeException("Factus error " + status + ": " + errorBody)
-                                    );
-                                });
-                    }
-
-                    // 🟩 Respuesta OK - Ahora deserializa a DocumentoFacturaResponse
-                    return response.bodyToMono(FacturaResponse.class)
-                            .doOnNext(resp -> {
-                                try {
-                                    ObjectMapper mapper = new ObjectMapper();
-                                    System.out.println("✅ FACTUS SANDBOX RESPUESTA:");
-                                    System.out.println(
-                                            mapper.writerWithDefaultPrettyPrinter()
-                                                    .writeValueAsString(resp)
-                                    );
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                });
+                .retrieve()
+                .bodyToMono(FacturaResponse.class);
     }
 
     //Ver y Filtrar Facturas

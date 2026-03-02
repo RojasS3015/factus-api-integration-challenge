@@ -38,7 +38,7 @@ public class FactusController {
         this.oauthService = oauthService;
     }
 
-    @PostMapping("/outh/token/obtener")
+    @GetMapping("/outh/token/obtener")
     public Mono<OauthToken> getLogin(){
 
         return oauthService.login();
