@@ -18,7 +18,7 @@ public class AuthHolder {
 
     public String getAccesToken(){
         OauthToken token = currentToken.get();
-        return (token != null) ? token.getAccess_token() : null;
+        return (token != null) ? token.getAccessToken() : null;
     }
 
     public boolean hasToken(){

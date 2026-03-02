@@ -8,10 +8,10 @@ import java.util.List;
 public class FacturaRequest {
 
     private String document;
-    private Integer numbering_range_id;
-    private String reference_code;
+    private Integer numberingRangeId;
+    private String referenceCode;
     private String observation;
-    private Integer payment_method_code;
+    private Integer paymentMethodCode;
     private Establishment establishment;
     private Customer customer;
     private List<Items> items;
@@ -20,9 +20,9 @@ public class FacturaRequest {
     public static class Establishment{
         private String name;
         private String address;
-        private String phone_number;
+        private String phoneNumber;
         private String email;
-        private Integer municipality_id;
+        private Integer municipalityId;
     }
 
     @Data
@@ -35,32 +35,32 @@ public class FacturaRequest {
         private String address;
         private String email;
         private String phone;
-        private Integer legal_organization_id;
-        private Integer tribute_id;
-        private Integer identification_document_id;
-        private Integer municipality_id;
+        private Integer legalOrganizationId;
+        private Integer tributeId;
+        private Integer identificationDocumentId;
+        private Integer municipalityId;
     }
 
     @Data
     public static class Items {
-        private String code_reference;
+        private String codeReference;
         private String name;
         private Integer quantity;
         private Float discount;
-        private Float discount_rate;
+        private Float discountRate;
         private Float price;
-        private String tax_rate;
-        private Integer unit_measure_id;
-        private Integer standard_code_id;
-        private Integer is_excluded;
-        private Integer tribute_id;
-        private List<WithholdingTax> withholding_taxes;
+        private String taxRate;
+        private Integer unitMeasureId;
+        private Integer standardCodeId;
+        private Integer isExcluded;
+        private Integer tributeId;
+        private List<WithholdingTax> withholdingTaxes;
     }
 
     @Data
     public static class WithholdingTax {
         private String code;
-        private Float withholding_tax_rate;
+        private Float withholdingTaxRate;
         
     }
 }

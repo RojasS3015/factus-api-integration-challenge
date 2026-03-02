@@ -69,7 +69,7 @@ public class WebClientConfig {
             return authService.login()
                     .flatMap(tokenResponse -> {
                         authHolder.saveToken(tokenResponse);
-                        return next.exchange(addToken(request, tokenResponse.getAccess_token()));
+                        return next.exchange(addToken(request, tokenResponse.getAccessToken()));
                     });
         }
         return next.exchange(addToken(request, authHolder.getAccesToken()));
