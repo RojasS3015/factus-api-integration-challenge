@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class OauthToken {
+public class AuthToken {
     
     @JsonProperty("token_type")
     private String tokenType;

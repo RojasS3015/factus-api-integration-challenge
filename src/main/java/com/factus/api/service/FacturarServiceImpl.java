@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import com.factus.api.models.FacturaRequest;
-import com.factus.api.models.FacturaResponse;
+import com.factus.api.dtos.request.FacturaRequest;
+import com.factus.api.dtos.response.FacturaResponse;
 import com.factus.api.models.Municipalities;
 import com.factus.api.models.Paises;
 import com.factus.api.models.Tributos;

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.factus.api.config.ApiConfig;
+import com.factus.api.config.FactusProperties;
 import com.factus.api.config.AuthToken;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +17,10 @@ import reactor.core.publisher.Mono;
 public class AuthService {
 
     private final WebClient webClient;
-    private final ApiConfig ApiConfig;
+    private final FactusProperties ApiConfig;
 
     
-    public AuthService (@Lazy WebClient webClient, ApiConfig ApiConfig){
+    public AuthService (@Lazy WebClient webClient, FactusProperties ApiConfig){
         this.webClient = webClient;
         this.ApiConfig = ApiConfig;
     }

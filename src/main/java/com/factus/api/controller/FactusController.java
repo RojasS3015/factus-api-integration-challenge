@@ -1,7 +1,7 @@
 package com.factus.api.controller;
 
-import com.factus.api.models.FacturaRequest;
-import com.factus.api.models.FacturaResponse;
+import com.factus.api.dtos.request.FacturaRequest;
+import com.factus.api.dtos.response.FacturaResponse;
 import com.factus.api.models.Municipalities;
 import com.factus.api.models.Paises;
 import com.factus.api.models.Tributos;
@@ -11,9 +11,9 @@ import com.factus.api.models.VerYfiltrarFacturas;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import com.factus.api.config.OauthToken;
+import com.factus.api.config.AuthToken;
 import com.factus.api.service.FacturarServiceImpl;
-import com.factus.api.service.OauthService;
+import com.factus.api.service.AuthService;
 
 import reactor.core.publisher.Mono;
 
@@ -31,21 +31,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class FactusController {
     
     private final FacturarServiceImpl factureService;
-    private final OauthService oauthService;
+    private final AuthService oauthService;
 
-    public FactusController(FacturarServiceImpl factureService, OauthService oauthService) {
+    public FactusController(FacturarServiceImpl factureService, AuthService oauthService) {
         this.factureService = factureService;
         this.oauthService = oauthService;
     }
 
     @GetMapping("/outh/token/obtener")
-    public Mono<OauthToken> getLogin(){
+    public Mono<AuthToken> getLogin(){
 
         return oauthService.login();
     }
 
     @GetMapping("/outh/token/refreshtoken/{refreshToken}")
-    public Mono<OauthToken> getRefreshTokem(@PathVariable String refreshToken){
+    public Mono<AuthToken> getRefreshTokem(@PathVariable String refreshToken){
 
         return oauthService.getRefreshToken(refreshToken);
     }

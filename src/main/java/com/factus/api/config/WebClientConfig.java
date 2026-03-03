@@ -12,10 +12,11 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.factus.api.service.OauthService;
+import com.factus.api.security.TokenContextHolder;
+import com.factus.api.service.AuthService;
 
 @Configuration
-@EnableConfigurationProperties(ApiConfig.class)
+@EnableConfigurationProperties(FactusProperties.class)
 @RequiredArgsConstructor
 public class WebClientConfig {
 
@@ -46,7 +47,7 @@ public class WebClientConfig {
     */
 
     @Bean
-    public WebClient webClient(ApiConfig apiconfig, AuthHolder authHolder, OauthService authService) {
+    public WebClient webClient(FactusProperties apiconfig, TokenContextHolder authHolder, AuthService authService) {
         return WebClient.builder()
                 .baseUrl(apiconfig.getBaseUrl())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -58,7 +59,7 @@ public class WebClientConfig {
     }
 
     // Este es el "Asistente" que te explicaba
-    private ExchangeFilterFunction autoAuthFilter(AuthHolder authHolder, OauthService authService) {
+    private ExchangeFilterFunction autoAuthFilter(TokenContextHolder authHolder, AuthService authService) {
     return (request, next) -> {
         // 🚨 REGLA DE ORO: Si la URL contiene "oauth/token", NO aplicar el filtro
         if (request.url().getPath().contains("/oauth/token")) {

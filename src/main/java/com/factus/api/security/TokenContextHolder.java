@@ -1,23 +1,25 @@
-package com.factus.api.config;
+package com.factus.api.security;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
+import com.factus.api.config.AuthToken;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class AuthHolder {
+public class TokenContextHolder {
     
-    private final AtomicReference<OauthToken> currentToken = new AtomicReference<>();
+    private final AtomicReference<AuthToken> currentToken = new AtomicReference<>();
 
-    public void saveToken(OauthToken token){
+    public void saveToken(AuthToken token){
         this.currentToken.set(token);
     }
 
     public String getAccesToken(){
-        OauthToken token = currentToken.get();
+        AuthToken token = currentToken.get();
         return (token != null) ? token.getAccessToken() : null;
     }
 

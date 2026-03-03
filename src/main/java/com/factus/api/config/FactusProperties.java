@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @ConfigurationProperties(prefix = "api")
-public class ApiConfig {
+public class FactusProperties {
 
     private String baseUrl;
     private String email;
