@@ -1,10 +1,12 @@
 package com.factus.api.dtos.response;
 
+import com.factus.api.dtos.common.MunicipiosDataDTO;
+import com.factus.api.dtos.common.TributeDataDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class Customer {
+public class CustomerResponse {
 
     private String identification;
     private String dv;
@@ -24,7 +26,7 @@ public class Customer {
     @JsonProperty("legal_organization")
     private LegalOrganization legalOrganization;
 
-    private Tribute tribute;
-    private Municipality municipality;
+    private TributeDataDTO tribute;
+    private MunicipiosDataDTO municipality;
 
 }

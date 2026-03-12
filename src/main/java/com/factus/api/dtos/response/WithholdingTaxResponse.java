@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class WithholdingTax {
+public class WithholdingTaxResponse {
 
     private String tribute_code;
     private String name;

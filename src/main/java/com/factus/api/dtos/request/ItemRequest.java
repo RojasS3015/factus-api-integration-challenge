@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class Item {
+public class ItemRequest {
 
     @JsonProperty("code_reference")
     private String codeReference;
@@ -36,5 +36,5 @@ public class Item {
     private Integer tributeId;
 
     @JsonProperty("withholding_taxes")
-    private List<WithholdingTax> withholdingTaxes;
+    private List<WithholdingTaxRequest> withholdingTaxes;
 }

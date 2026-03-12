@@ -1,5 +1,7 @@
 package com.factus.api.dtos.response;
 
+import com.factus.api.dtos.common.TributeDataDTO;
+import com.factus.api.dtos.common.UnitMeasureDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -7,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class Item {
+public class ItemResponse {
 
     @JsonProperty("scheme_id")
     private String schemeId;
@@ -43,17 +45,17 @@ public class Item {
     private int isExcluded;
 
     @JsonProperty("unit_measure")
-    private UnitMeasure unitMeasure;
+    private UnitMeasureDTO unitMeasure;
 
     @JsonProperty("standard_code")
     private StandardCode standardCode;
 
-    private Tribute tribute;
+    private TributeDataDTO tribute;
 
     private BigDecimal total;
 
     @JsonProperty("withholding_taxes")
-    private List<WithholdingTax> withholdingTaxes;
+    private List<WithholdingTaxResponse> withholdingTaxes;
 
     private String mandate;
 }

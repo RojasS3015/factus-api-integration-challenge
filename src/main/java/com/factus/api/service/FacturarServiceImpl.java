@@ -2,6 +2,8 @@ package com.factus.api.service;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.factus.api.dtos.request.FacturaRequest;
@@ -40,7 +42,20 @@ public class FacturarServiceImpl {
                 .uri("/v1/bills/validate")
                 .bodyValue(facture)
                 .retrieve()
-                .bodyToMono(FacturaResponse.class);
+                // 1. Manejo de errores de Cliente (4xx) o Servidor (5xx)
+                .onStatus(HttpStatusCode::isError, response -> 
+                    response.bodyToMono(String.class)
+                        .flatMap(errorBody -> {
+                            log.error("❌ Error en Factus [{}]: {}", response.statusCode(), errorBody);
+                            return Mono.error(new RuntimeException("Error de Factus: " + errorBody));
+                        })
+                )
+                // 2. Mapeo automático al DTO de respuesta
+                .bodyToMono(FacturaResponse.class)
+                // 3. Log de éxito con datos específicos
+                .doOnNext(res -> log.info("✅ Factura validada exitosamente. Documento: {}", res.getData().getBill().getNombre()))
+                // 4. Log de error fatal (ej. timeout o caída de red)
+                .doOnError(e -> log.error("💀 Error crítico en el flujo de comunicación: {}", e.getMessage()));
     }
 
     //Ver y Filtrar Facturas

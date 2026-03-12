@@ -22,7 +22,7 @@ public class FacturaRequest {
     private Integer paymentMethodCode;
 
     private Establishment establishment;
-    private Customer customer;
+    private CustomerRequest customer;
 
-    private List<Item> items; 
+    private List<ItemRequest> items; 
 }

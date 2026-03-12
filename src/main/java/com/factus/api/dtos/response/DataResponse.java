@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DataResponse {
 
     private Company company;
-    private Customer customer;
+    private CustomerResponse customer;
 
     @JsonProperty("numbering_range")
     private NumberingRange numberingRange;
@@ -22,10 +22,10 @@ public class DataResponse {
     @JsonProperty("related_documents")
     private List<Object> relatedDocuments;
 
-    private List<Item> items;
+    private List<ItemResponse> items;
 
     @JsonProperty("withholding_taxes")
-    private List<WithholdingTax> withholdingTaxes;
+    private List<WithholdingTaxResponse> withholdingTaxes;
 
     @JsonProperty("credit_notes")
     private List<Object> creditNotes;
