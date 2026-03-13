@@ -1,18 +1,22 @@
 package com.factus.api.service;
 
+import java.time.Duration;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import com.factus.api.dtos.request.FacturaRequest;
 import com.factus.api.dtos.response.FacturaResponse;
+import com.factus.api.exception.FactusClientException;
+import com.factus.api.exception.FactusServerException;
 import com.factus.api.models.Municipalities;
 import com.factus.api.models.Paises;
 import com.factus.api.models.Tributos;
 import com.factus.api.models.UnidadesDeMedida;
 import com.factus.api.models.VerYfiltrarFacturas;
+
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -32,30 +36,61 @@ public class FacturarServiceImpl {
         return webClient.get()
                 .uri("/v1/numbering-ranges?filter[id]&filter[document]&filter[resolution_number]&filter[technical_key]&filter[is_active]")
                 .retrieve()
-                .bodyToMono(String.class);  // Asumimos que la respuesta será un String (JSON)
+                //🟥 Si el error de cliente (400, 401, 422)
+                .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                    .flatMap(errorBody -> {
+                        log.warn("⚠️ Datos inválidos enviados a Factus: {}", errorBody);
+                        // Usamos RuntimeException para que compile de una vez
+                        return Mono.error(new FactusClientException(errorBody));
+                    })
+                )
+                // 🟥 Si es error del servidor de Factus (500, 503...)
+                .onStatus(HttpStatusCode :: is5xxServerError, response -> {
+                    log.error("🔥 Factus no disponible al consultar rangos");
+                    //// Usamos RuntimeException para que compile de una vez
+                    return Mono.error(new FactusServerException("Servidor Factus No responde"));
+          
+                })
+
+            .bodyToMono(String.class)
+            .timeout(Duration.ofSeconds(5))
+            .doOnNext(res -> log.info("✅ Rangos obtenidos correctamente"))
+            .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+
     }
 
-
     public Mono<FacturaResponse> getFacture(FacturaRequest facture) {
+        // Log de intención: Corto y con dato clave
+    log.info("Validando factura en Factus. Ref: {}", facture.getReferenceCode());
+    return webClient.post()
+            .uri("/v1/bills/validate")
+            .bodyValue(facture)
+            .retrieve()
+            // 🟥 Si es error de cliente (400, 401, 422...)
+            .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                    .flatMap(errorBody -> {
+                        log.warn("⚠️ Datos inválidos enviados a Factus: {}", errorBody);
+                        // Usamos RuntimeException para que compile de una vez
+                        return Mono.error(new FactusClientException(errorBody));
+                    })
+            )
+            // 🟥 Si es error del servidor de Factus (500, 503...)
+            .onStatus(HttpStatusCode::is5xxServerError, response -> {
+                log.error("🔥 Factus no disponible (5xx)");
+                return Mono.error(new FactusServerException("Factus fuera de servicio"));
+            })
+            .bodyToMono(FacturaResponse.class)
+            // 👇 AQUÍ
+            .timeout(Duration.ofSeconds(5))
 
-        return webClient.post()
-                .uri("/v1/bills/validate")
-                .bodyValue(facture)
-                .retrieve()
-                // 1. Manejo de errores de Cliente (4xx) o Servidor (5xx)
-                .onStatus(HttpStatusCode::isError, response -> 
-                    response.bodyToMono(String.class)
-                        .flatMap(errorBody -> {
-                            log.error("❌ Error en Factus [{}]: {}", response.statusCode(), errorBody);
-                            return Mono.error(new RuntimeException("Error de Factus: " + errorBody));
-                        })
-                )
-                // 2. Mapeo automático al DTO de respuesta
-                .bodyToMono(FacturaResponse.class)
-                // 3. Log de éxito con datos específicos
-                .doOnNext(res -> log.info("✅ Factura validada exitosamente. Documento: {}", res.getData().getBill().getNombre()))
-                // 4. Log de error fatal (ej. timeout o caída de red)
-                .doOnError(e -> log.error("💀 Error crítico en el flujo de comunicación: {}", e.getMessage()));
+            // 🟩 Log de éxito: Confirmación breve
+            .doOnNext(res -> log.info("✅ Validación exitosa para: {}", facture.getReferenceCode()))
+
+            .doOnError(error ->
+                    log.error("Error validando factura {} : {}",
+                            facture.getReferenceCode(),
+                            error.getMessage())
+            );
     }
 
     //Ver y Filtrar Facturas
@@ -78,19 +113,23 @@ public class FacturarServiceImpl {
                         .queryParamIfPresent("filter[status]", Optional.ofNullable(status))
                     .build())
                 .retrieve()
+                .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                    .flatMap(errorBody -> {
+                        log.warn("⚠️ Datos inválidos enviados a Factus: {}" , errorBody);
+
+                        return Mono.error(new FactusClientException(errorBody));
+                    })
+                )
+                .onStatus(HttpStatusCode :: is5xxServerError, response -> {
+                    log.error("🔥 Factus no disponible (5xx)");
+
+                    return Mono.error(new FactusServerException("fuera de servicio"));
+                })
                 .bodyToMono(VerYfiltrarFacturas.class)
-                //.doOnSubscribe(sub -> log.info("=== Iniciando búsqueda filtrada de facturas ==="))
-                .doOnSubscribe(sub -> log.info("🔍 Consultando facturas - Filtros: Identificación={}, Número={}, Estado={}", 
-                identification, number, status))
-                .doOnNext(res -> {
-                    //Si el modelo tiene datos anidados: res.getObjeto().getLista().size().
-                    if(res.getData() != null && res.getData().getData() != null){
-                        int total = res.getData().getData().size();
-                        log.info("✅ Consulta exitosa: Se recuperaron {} facturas.", total);
-                    }else{
-                        log.warn("⚠️ La API respondió correctamente pero la lista de facturas está vacía.");
-                    }
-                });
+                .timeout(Duration.ofSeconds(5))
+                .doOnNext(res -> log.info("✅ Facturas obtenidas correctamente"))
+                .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+
     }
     //Obtener municipios y filtrar
     public Mono<Municipalities> getMunicipiosFiltrar(String name){
@@ -101,19 +140,22 @@ public class FacturarServiceImpl {
                             .queryParamIfPresent("name", Optional.ofNullable(name))
                         .build())
                         .retrieve()
-                        .bodyToMono(Municipalities.class)
-                        .doOnSubscribe(sub -> log.info("Buscando municipios..... name={}", name))
-                        .doOnNext(res -> {
-                            // 1. Llamamos a getData() una sola vez porque ahí está nuestra lista
-                            if (res.getData() != null) {
-                                // 2. Obtenemos el tamaño de la lista directamente
-                                int total = res.getData().size();
+                        //filtro 1 o Se Activa el Tunel de fotones
+                        .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                log.warn("⚠️ Error de cliente en Municipios: {}", errorBody);
 
-                                log.info("Se consulto con exito los municipios: {} municipios.", total);
-                            }else{
-                                log.warn("La api respondio correctamente pero los municipios estan vacios");
-                            }
-                        });
+                                return Mono.error(new FactusClientException(errorBody));
+                            })
+                        )
+                        .onStatus(HttpStatusCode :: is5xxServerError, response -> {
+                            log.error("Factus No Disponible");
+
+                            return Mono.error(new FactusServerException("fuera de servicio"));
+                        })
+                        .bodyToMono(Municipalities.class)
+                        .doOnNext(res -> log.info("✅ Municipios obtenidos correctamente"))
+                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
     }
 
     //Obtener Tributos y Flitrar
@@ -125,17 +167,22 @@ public class FacturarServiceImpl {
                             .queryParamIfPresent("name", Optional.ofNullable(name))
                         .build())
                         .retrieve()
-                        .bodyToMono(Tributos.class)
-                        .doOnSubscribe(sub -> log.info("Buscando tributos..... name={}", name))
-                        .doOnNext(res -> {
-                            if (res.getData() != null) {
-                                int total = res.getData().size();
+                        .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                log.warn("⚠️ Datos inválidos enviados a Factus: {}", errorBody);
+                                
+                                return Mono.error(new FactusClientException(errorBody));
+                            })
+                        )
+                        .onStatus(HttpStatusCode :: is5xxServerError, response -> {
+                            log.error("Factus No Disponible");
 
-                                log.info("Se Consulto con exito los tributos: {} tributos.", total);
-                            }else{
-                                log.warn("La api respondio correctamente pero los tributos estan vacios");
-                            }
-                        });
+                            return Mono.error(new FactusServerException("fuera de servicio"));
+                        })
+                        .bodyToMono(Tributos.class)
+                        .timeout(Duration.ofSeconds(5))
+                        .doOnNext(res -> log.info("✅ Tributos obtenidos correctamente"))
+                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
     }
 
     //Obtener Paises y Filtrar
@@ -147,17 +194,22 @@ public class FacturarServiceImpl {
                             .queryParamIfPresent("name", Optional.ofNullable(name))
                             .build())
                             .retrieve()
-                            .bodyToMono(Paises.class)
-                            .doOnSubscribe(sub -> log.info("Buscando paises..... name={}", name))
-                            .doOnNext(res -> {
-                                if (res.getData() != null) {
+                            .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                log.warn("⚠️ Datos inválidos enviados a Factus: {}", errorBody);
+                                
+                                return Mono.error(new FactusClientException(errorBody));
+                            })
+                        )
+                        .onStatus(HttpStatusCode :: is5xxServerError, response -> {
+                            log.error("Factus No Disponible");
 
-                                    int total = res.getData().size();
-                                    log.info("Se consulto con exito los paises: {} paises", total);
-                                }else{
-                                    log.warn("La api respondio correctamente pero los atributos estan vacios");
-                                }
-                            });
+                            return Mono.error(new FactusServerException("fuera de servicio"));
+                        })
+                        .bodyToMono(Paises.class)
+                        .timeout(Duration.ofSeconds(5))
+                        .doOnNext(res -> log.info("✅ Paises obtenidos correctamente"))
+                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
     }
 
     //Obtener Unidades de Medida y Filtrar
@@ -169,15 +221,21 @@ public class FacturarServiceImpl {
                             .queryParamIfPresent("name", Optional.ofNullable(name))
                             .build())
                         .retrieve()
+                        .onStatus(HttpStatusCode :: is4xxClientError, response -> response.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                log.warn("⚠️ Datos inválidos enviados a Factus: {}", errorBody);
+
+                                return Mono.error(new FactusClientException(errorBody));
+                            })
+                        )
+                        .onStatus(HttpStatusCode :: is5xxServerError, response ->{
+                            log.error("Factus No Disponible");
+
+                            return Mono.error(new FactusServerException("fuera de servicio"));
+                        })
                         .bodyToMono(UnidadesDeMedida.class)
-                        .doOnSubscribe(sub -> log.info("Buscando Unidades de medida.... name={}", name))
-                        .doOnNext(res -> {
-                            if (res.getData() != null) {
-                                int total = res.getData().size();
-                                log.info("Se consulto con exito las unidades de medida: {} Unidades de medida", total);
-                            }else{
-                                log.warn("La api respondio correctamente pero los atributos estan vacios");
-                            }
-                        });
+                        .timeout(Duration.ofSeconds(5))
+                        .doOnNext(res -> log.info("✅ Unidades de medidas obtenidos correctamente"))
+                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
     }
 }

@@ -1,9 +1,13 @@
 package com.factus.api.config;
 
 import lombok.RequiredArgsConstructor;
+import reactor.netty.http.client.HttpClient;
+
 import org.springframework.http.HttpHeaders;  // Para HttpHeaders.CONTENT_TYPE
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
+import java.time.Duration;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -48,8 +52,12 @@ public class WebClientConfig {
 
     @Bean
     public WebClient webClient(FactusProperties apiconfig, TokenContextHolder authHolder, AuthService authService) {
+         HttpClient httpClient = HttpClient.create()
+            .responseTimeout(Duration.ofSeconds(8));
+
         return WebClient.builder()
                 .baseUrl(apiconfig.getBaseUrl())
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 // 1. ELIMINAMOS el header estático (el que tenías con apiconfig.getTokenAccess())

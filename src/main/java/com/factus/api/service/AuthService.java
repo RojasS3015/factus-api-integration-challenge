@@ -17,12 +17,12 @@ import reactor.core.publisher.Mono;
 public class AuthService {
 
     private final WebClient webClient;
-    private final FactusProperties ApiConfig;
+    private final FactusProperties apiConfig;
 
     
-    public AuthService (@Lazy WebClient webClient, FactusProperties ApiConfig){
+    public AuthService (@Lazy WebClient webClient, FactusProperties apiConfig){
         this.webClient = webClient;
-        this.ApiConfig = ApiConfig;
+        this.apiConfig = apiConfig;
     }
 
     //permite obtener un token de acceso para autenticar solicitudes a la API mediante las credenciales del sistema.
@@ -31,10 +31,10 @@ public class AuthService {
         return webClient.post()
                         .uri("/oauth/token")
                         .body(BodyInserters.fromFormData("grant_type", "password")
-                        .with("client_id", ApiConfig.getClientId())
-                        .with("client_secret", ApiConfig.getClientSecret())
-                        .with("username", ApiConfig.getEmail())
-                        .with("password", ApiConfig.getPassword()))
+                        .with("client_id", apiConfig.getClientId())
+                        .with("client_secret", apiConfig.getClientSecret())
+                        .with("username", apiConfig.getEmail())
+                        .with("password", apiConfig.getPassword()))
                     .retrieve()
                     .bodyToMono(AuthToken.class)
                     //nueva linea
@@ -43,14 +43,14 @@ public class AuthService {
     }
 
     //permite actualizar el token de acceso mediante el uso de un refresh token previamente generado.
-    public Mono<AuthToken> getRefreshToken(String refresh_token){
+    public Mono<AuthToken> getRefreshToken(String refreshToken){
 
         return webClient.post()
                         .uri("/oauth/token")
                         .body(BodyInserters.fromFormData("grant_type", "refresh_token")
-                        .with("client_id", ApiConfig.getClientId())
-                        .with("client_secret", ApiConfig.getClientSecret())
-                        .with("refresh_token", refresh_token))
+                        .with("client_id", apiConfig.getClientId())
+                        .with("client_secret", apiConfig.getClientSecret())
+                        .with("refresh_token", refreshToken))
                     .retrieve()
                     .bodyToMono(AuthToken.class)
                     //nueva linea
