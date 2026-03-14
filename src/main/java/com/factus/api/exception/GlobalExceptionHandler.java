@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.factus.api.dtos.response.ErrorResponse;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,12 +20,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FactusClientException.class)
     public ResponseEntity<ErrorResponse> handleFactusClientException(FactusClientException ex){
+        System.out.println("JSON crudo que llegó de Factus: " + ex.getMessage());
         List<String> detalles = new ArrayList<>();
+        //ingresamos la excepcion de FactusClientException.getMesaage
         String errorRaw = ex.getMessage();
 
         try {
             JsonNode root = objectMapper.readTree(errorRaw);
-            JsonNode errorsNode = root.path("Data").path("errors");
+            JsonNode errorsNode = root.path("data").path("errors");
 
             // Si el nodo "errors" es un objeto (como el 422: campo -> [error])
             if (errorsNode.isObject()) {
