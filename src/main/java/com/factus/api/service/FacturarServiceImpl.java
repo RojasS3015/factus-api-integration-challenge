@@ -1,11 +1,10 @@
 package com.factus.api.service;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import com.factus.api.client.FactusClient;
 import com.factus.api.dtos.request.FacturaRequest;
 import com.factus.api.dtos.response.FacturaResponse;
 import com.factus.api.models.Municipalities;
@@ -21,43 +20,31 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class FacturarServiceImpl implements FacturarService{
 
-    private final WebClient webClient;
+    private final FactusClient factusClient;
 
-    public FacturarServiceImpl(WebClient webClient){
-        this.webClient = webClient;
+    public FacturarServiceImpl(FactusClient factusClient){
+        this.factusClient = factusClient;
 
     }
     
       // Método para obtener los rangos de numeración
     public Mono<String> getNumberingRanges() {
-        return webClient.get()
-                .uri("/v1/numbering-ranges?filter[id]&filter[document]&filter[resolution_number]&filter[technical_key]&filter[is_active]")
-                .retrieve()
-            .bodyToMono(String.class)
-            .timeout(Duration.ofSeconds(5))
-            .doOnNext(res -> log.info("✅ Rangos obtenidos correctamente"))
-            .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+        return factusClient.get(
+            uri -> uri.path("/v1/numbering-ranges")
+            .query("filter[id]&filter[document]&filter[resolution_number]&filter[technical_key]&filter[is_active]")
+            .build(), String.class, "Rango de numeros obtenidos."
+        );
 
     }
 
     public Mono<FacturaResponse> getFacture(FacturaRequest facture) {
         // Log de intención: Corto y con dato clave
-    log.info("Validando factura en Factus. Ref: {}", facture.getReferenceCode());
-    return webClient.post()
-            .uri("/v1/bills/validate")
-            .bodyValue(facture)
-            .retrieve()
-            .bodyToMono(FacturaResponse.class)
-            .timeout(Duration.ofSeconds(5))
+        log.info("Validando factura en Factus. Ref: {}", facture.getReferenceCode());
 
-            // 🟩 Log de éxito: Confirmación breve
-            .doOnNext(res -> log.info("✅ Validación exitosa para: {}", facture.getReferenceCode()))
-
-            .doOnError(error ->
-                    log.error("Error validando factura {} : {}",
-                            facture.getReferenceCode(),
-                            error.getMessage())
-            );
+        return factusClient.post(
+            uri -> uri.path("/v1/bills/validate")
+            .build(), facture, FacturaResponse.class, "Factura Creada OK"
+        );
     }
 
     //Ver y Filtrar Facturas
@@ -69,80 +56,55 @@ public class FacturarServiceImpl implements FacturarService{
         String reference_code,
         String status){
 
-        return webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                        .path("/v1/bills")
+        return factusClient.get(
+            uri -> uri.path("/v1/bills")
                         .queryParamIfPresent("filter[identification]", Optional.ofNullable(identification))
                         .queryParamIfPresent("filter[names]", Optional.ofNullable(names))
                         .queryParamIfPresent("filter[number]", Optional.ofNullable(number))
                         .queryParamIfPresent("filter[prefix]", Optional.ofNullable(prefix))
                         .queryParamIfPresent("filter[reference_code]", Optional.ofNullable(reference_code))
                         .queryParamIfPresent("filter[status]", Optional.ofNullable(status))
-                    .build())
-                .retrieve()
-                .bodyToMono(VerYfiltrarFacturas.class)
-                .timeout(Duration.ofSeconds(5))
-                .doOnNext(res -> log.info("✅ Facturas obtenidas correctamente"))
-                .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
-
+                    .build(), VerYfiltrarFacturas.class, "Factura obtenida correctamente"
+                );
+                
     }
     //Obtener municipios y filtrar
     public Mono<Municipalities> getMunicipiosFiltrar(String name){
         
-        return webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                            .path("/v1/municipalities")
-                            .queryParamIfPresent("name", Optional.ofNullable(name))
-                        .build())
-                        .retrieve()
-                        .bodyToMono(Municipalities.class)
-                        .timeout(Duration.ofSeconds(5))
-                        .doOnNext(res -> log.info("✅ Municipios obtenidos correctamente"))
-                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+        return factusClient.get(
+            uri -> uri.path("/v1/municipalities")
+            .queryParamIfPresent("name", Optional.ofNullable(name))
+            .build(), Municipalities.class, "Municipios obtenidos correctamente"
+        );
     }
 
     //Obtener Tributos y Flitrar
     public Mono<Tributos> getTributos(String name){
         
-        return webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                            .path("/v1/tributes/products")
-                            .queryParamIfPresent("name", Optional.ofNullable(name))
-                        .build())
-                        .retrieve()
-                        .bodyToMono(Tributos.class)
-                        .timeout(Duration.ofSeconds(5))
-                        .doOnNext(res -> log.info("✅ Tributos obtenidos correctamente"))
-                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+        return factusClient.get(
+            uri -> uri.path("/v1/tributes/products")
+            .queryParamIfPresent("name", Optional.ofNullable(name))
+            .build(), Tributos.class, "Tributos obtenidos correctamente"
+        );
     }
 
     //Obtener Paises y Filtrar
     public Mono<Paises> getPaises(String name){
 
-        return webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                            .path("/v1/countries")
-                            .queryParamIfPresent("name", Optional.ofNullable(name))
-                            .build())
-                            .retrieve()
-                        .bodyToMono(Paises.class)
-                        .timeout(Duration.ofSeconds(5))
-                        .doOnNext(res -> log.info("✅ Paises obtenidos correctamente"))
-                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+        return factusClient.get(uri -> uri.path("/v1/countries")
+                .queryParamIfPresent("name", Optional.ofNullable(name))
+                .build(), Paises.class, "Paises obtenidos correctamente"
+
+        );
     }
 
     //Obtener Unidades de Medida y Filtrar
     public Mono<UnidadesDeMedida> getUnidadesDeMedida(String name){
 
-        return webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                            .path("/v1/measurement-units")
-                            .queryParamIfPresent("name", Optional.ofNullable(name))
-                            .build())
-                        .retrieve()
-                        .bodyToMono(UnidadesDeMedida.class)
-                        .timeout(Duration.ofSeconds(5))
-                        .doOnNext(res -> log.info("✅ Unidades de medidas obtenidos correctamente"))
-                        .doOnError(error -> log.error("❌ Fallo total en la consulta: {}", error.getMessage()));
+        return factusClient.get(
+            uri -> uri.path("/v1/measurement-units")
+            .queryParamIfPresent("name", Optional.ofNullable(name))
+            .build(), UnidadesDeMedida.class, "Unidades de medidas obtenidos correctamente"
+        );
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.factus.api.exception.FactusFilters;
 import com.factus.api.security.TokenContextHolder;
 import com.factus.api.service.AuthService;
 
@@ -57,6 +58,7 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .baseUrl(apiconfig.getBaseUrl())
+                .filter(FactusFilters.errorHandler())
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
