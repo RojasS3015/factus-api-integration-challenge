@@ -8,12 +8,10 @@ import com.factus.api.models.Tributos;
 import com.factus.api.models.UnidadesDeMedida;
 import com.factus.api.models.VerYfiltrarFacturas;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import com.factus.api.config.AuthToken;
-import com.factus.api.service.FacturarServiceImpl;
 import com.factus.api.service.AuthService;
+import com.factus.api.service.FacturarService;
 
 import reactor.core.publisher.Mono;
 
@@ -30,11 +28,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 public class FactusController {
     
-    private final FacturarServiceImpl factureService;
+    private final FacturarService facturarService;
     private final AuthService oauthService;
 
-    public FactusController(FacturarServiceImpl factureService, AuthService oauthService) {
-        this.factureService = factureService;
+    public FactusController(FacturarService facturarService, AuthService oauthService) {
+        this.facturarService = facturarService;
         this.oauthService = oauthService;
     }
 
@@ -54,17 +52,14 @@ public class FactusController {
     @GetMapping("/v1/numbering-ranges")
     public Mono<String> getNumberingRanges() {
 
-        return factureService.getNumberingRanges();
+        return facturarService.getNumberingRanges();
     }
 
     //Crear y validar factura
     @PostMapping("/validate")
-    public Mono<ResponseEntity<FacturaResponse>> getFacturaCrear(@RequestBody FacturaRequest facture){
+    public Mono<FacturaResponse> getFacturaCrear(@RequestBody FacturaRequest facture){
 
-        return factureService.getFacture(facture)
-                .map(factura -> ResponseEntity
-                        .status(HttpStatus.CREATED)
-                .body(factura));
+        return facturarService.getFacture(facture);
     }
 
     //Ver y Filtrar Factura
@@ -76,7 +71,7 @@ public class FactusController {
         @RequestParam(required = false) String reference_code,
         @RequestParam(required = false) String status) {
         
-        return factureService.getVerFacturasYfiltrar(identification, names, number, prefix, reference_code, status);
+        return facturarService.getVerFacturasYfiltrar(identification, names, number, prefix, reference_code, status);
         
     }
 
@@ -84,7 +79,7 @@ public class FactusController {
     @GetMapping("/municipios")
     public Mono<Municipalities> getMuncipios(@RequestParam(required = false) String name) {
 
-        return factureService.getMunicipiosFiltrar(name);
+        return facturarService.getMunicipiosFiltrar(name);
         
     }
     
@@ -92,21 +87,21 @@ public class FactusController {
     @GetMapping("/tributos")
     public Mono<Tributos> getObtenerTributos(@RequestParam(required = false) String name) {
         
-        return factureService.getTributos(name);
+        return facturarService.getTributos(name);
     }
 
     //Obtener Paises y Filtrar
     @GetMapping("/paises")
     public Mono<Paises> getPaisesYfiltrar(@RequestParam(required = false) String name){
         
-        return factureService.getPaises(name);
+        return facturarService.getPaises(name);
     }   
 
     //Obtener Unidades de Medida y Filtrar
     @GetMapping("measurement-units")
     public Mono<UnidadesDeMedida> getUnidadesDeMedidaFiltrar(@RequestParam(required = false) String name){
 
-        return factureService.getUnidadesDeMedida(name);
+        return facturarService.getUnidadesDeMedida(name);
     }
     
     
