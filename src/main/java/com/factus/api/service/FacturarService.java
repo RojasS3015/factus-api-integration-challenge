@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public interface FacturarService {
     Mono<String> getNumberingRanges();
 
-    Mono<FacturaResponse> getFacture(FacturaRequest facture);
+    Mono<FacturaResponse> getCreateFacture(FacturaRequest facture);
 
     Mono<VerYfiltrarFacturas> getVerFacturasYfiltrar(
         String identification,

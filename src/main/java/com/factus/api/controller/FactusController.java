@@ -2,31 +2,21 @@ package com.factus.api.controller;
 
 import com.factus.api.dtos.request.FacturaRequest;
 import com.factus.api.dtos.response.FacturaResponse;
-import com.factus.api.models.Municipalities;
-import com.factus.api.models.Paises;
-import com.factus.api.models.Tributos;
-import com.factus.api.models.UnidadesDeMedida;
-import com.factus.api.models.VerYfiltrarFacturas;
-
-import org.springframework.web.bind.annotation.RestController;
+import com.factus.api.models.*;
 import com.factus.api.config.AuthToken;
 import com.factus.api.service.AuthService;
 import com.factus.api.service.FacturarService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Tag(name = "Factus API Controller", description = "Endpoints para la gestión de facturación electrónica e integración con Factus")
 public class FactusController {
     
     private final FacturarService facturarService;
@@ -37,73 +27,75 @@ public class FactusController {
         this.oauthService = oauthService;
     }
 
+    @Operation(summary = "Obtener Token de Acceso", description = "Realiza el login inicial para obtener el Bearer Token de Factus.")
     @GetMapping("/outh/token/obtener")
     public Mono<AuthToken> getLogin(){
-
         return oauthService.login();
     }
 
+    @Operation(summary = "Refrescar Token", description = "Utiliza el refresh_token para obtener una nueva sesión sin necesidad de credenciales.")
     @GetMapping("/outh/token/refreshtoken/{refreshToken}")
     public Mono<AuthToken> getRefreshTokem(@PathVariable String refreshToken){
-
         return oauthService.getRefreshToken(refreshToken);
     }
 
-    // Endpoint para obtener los rangos de numeración
+    @Operation(summary = "Listar rangos de numeración", description = "Obtiene los prefijos y rangos de facturación autorizados por la DIAN.")
     @GetMapping("/v1/numbering-ranges")
     public Mono<String> getNumberingRanges() {
-
         return facturarService.getNumberingRanges();
     }
 
-    //Crear y validar factura
+    @Operation(
+        summary = "Validar y crear factura", 
+        description = "Envía el cuerpo de la factura para validación local y posterior registro en Factus.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Factura procesada correctamente"),
+            @ApiResponse(responseCode = "400", description = "Error de validación en los campos enviados")
+        }
+    )
     @PostMapping("/validate")
     public Mono<FacturaResponse> getFacturaCrear(@Valid @RequestBody FacturaRequest facture){
-
-        return facturarService.getFacture(facture);
+        return facturarService.getCreateFacture(facture);
     }
 
-    //Ver y Filtrar Factura
+    @Operation(summary = "Filtrar facturas", description = "Busca facturas emitidas aplicando filtros como identificación o estado.")
     @GetMapping("/filtrar")
-    public Mono<VerYfiltrarFacturas> filtrarFacturas(@RequestParam(required = false) String identification,
-        @RequestParam(required = false) String names,
-        @RequestParam(required = false) String number,
-        @RequestParam(required = false) String prefix,
-        @RequestParam(required = false) String reference_code,
-        @RequestParam(required = false) String status) {
+    public Mono<VerYfiltrarFacturas> filtrarFacturas(
+        @Parameter(description = "Identificación del cliente") @RequestParam(required = false) String identification,
+        @Parameter(description = "Nombre o razón social") @RequestParam(required = false) String names,
+        @Parameter(description = "Número de factura") @RequestParam(required = false) String number,
+        @Parameter(description = "Prefijo de facturación") @RequestParam(required = false) String prefix,
+        @Parameter(description = "Código de referencia interno") @RequestParam(required = false) String reference_code,
+        @Parameter(description = "Estado (ej: 0 para borrador)") @RequestParam(required = false) String status) {
         
         return facturarService.getVerFacturasYfiltrar(identification, names, number, prefix, reference_code, status);
-        
     }
 
-    //Obtener Municipios
+    @Operation(summary = "Obtener municipios", description = "Consulta el catálogo oficial de municipios de Colombia.")
     @GetMapping("/municipios")
-    public Mono<Municipalities> getMuncipios(@RequestParam(required = false) String name) {
-
+    public Mono<Municipalities> getMuncipios(
+        @Parameter(description = "Nombre del municipio para filtrar") @RequestParam(required = false) String name) {
         return facturarService.getMunicipiosFiltrar(name);
-        
     }
     
-    //Obtener Tributos y Filtrar
+    @Operation(summary = "Obtener tributos", description = "Listado de impuestos aplicables (IVA, Retenciones, etc).")
     @GetMapping("/tributos")
-    public Mono<Tributos> getObtenerTributos(@RequestParam(required = false) String name) {
-        
+    public Mono<Tributos> getObtenerTributos(
+        @Parameter(description = "Nombre del tributo") @RequestParam(required = false) String name) {
         return facturarService.getTributos(name);
     }
 
-    //Obtener Paises y Filtrar
+    @Operation(summary = "Obtener países", description = "Catálogo internacional de países.")
     @GetMapping("/paises")
-    public Mono<Paises> getPaisesYfiltrar(@RequestParam(required = false) String name){
-        
+    public Mono<Paises> getPaisesYfiltrar(
+        @Parameter(description = "Nombre del país") @RequestParam(required = false) String name){
         return facturarService.getPaises(name);
     }   
 
-    //Obtener Unidades de Medida y Filtrar
+    @Operation(summary = "Unidades de medida", description = "Listado de unidades (Unidad, Kilogramo, etc) para los ítems de factura.")
     @GetMapping("measurement-units")
-    public Mono<UnidadesDeMedida> getUnidadesDeMedidaFiltrar(@RequestParam(required = false) String name){
-
+    public Mono<UnidadesDeMedida> getUnidadesDeMedidaFiltrar(
+        @Parameter(description = "Nombre de la unidad") @RequestParam(required = false) String name){
         return facturarService.getUnidadesDeMedida(name);
     }
-    
-    
 }

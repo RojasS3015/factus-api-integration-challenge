@@ -37,7 +37,7 @@ public class FacturarServiceImpl implements FacturarService{
 
     }
 
-    public Mono<FacturaResponse> getFacture(FacturaRequest facture) {
+    public Mono<FacturaResponse> getCreateFacture(FacturaRequest facture) {
         // Log de intención: Corto y con dato clave
         log.info("Validando factura en Factus. Ref: {}", facture.getReferenceCode());
 
