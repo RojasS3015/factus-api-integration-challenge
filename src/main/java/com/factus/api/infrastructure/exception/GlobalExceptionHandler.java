@@ -1,4 +1,4 @@
-package com.factus.api.exception;
+package com.factus.api.infrastructure.exception;
 
 
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.factus.api.dtos.response.ErrorResponse;
+import com.factus.api.presentation.dtos.response.ErrorResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

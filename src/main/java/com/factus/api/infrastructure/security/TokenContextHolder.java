@@ -1,10 +1,10 @@
-package com.factus.api.security;
+package com.factus.api.infrastructure.security;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
-import com.factus.api.config.AuthToken;
+import com.factus.api.infrastructure.config.AuthToken;
 
 import lombok.extern.slf4j.Slf4j;
 

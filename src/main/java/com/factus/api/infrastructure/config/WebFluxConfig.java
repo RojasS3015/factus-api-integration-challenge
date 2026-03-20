@@ -1,4 +1,4 @@
-package com.factus.api.config;
+package com.factus.api.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;

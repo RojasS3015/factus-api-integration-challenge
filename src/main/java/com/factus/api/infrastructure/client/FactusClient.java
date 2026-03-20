@@ -1,4 +1,4 @@
-package com.factus.api.client;
+package com.factus.api.infrastructure.client;
 
 import java.net.URI;
 import java.time.Duration;

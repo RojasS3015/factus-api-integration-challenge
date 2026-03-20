@@ -1,4 +1,4 @@
-package com.factus.api.config;
+package com.factus.api.infrastructure.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,4 +1,4 @@
-package com.factus.api.config;
+package com.factus.api.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
 import reactor.netty.http.client.HttpClient;
@@ -16,9 +16,9 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.factus.api.exception.FactusFilters;
-import com.factus.api.security.TokenContextHolder;
-import com.factus.api.service.AuthService;
+import com.factus.api.app.service.AuthService;
+import com.factus.api.infrastructure.exception.FactusFilters;
+import com.factus.api.infrastructure.security.TokenContextHolder;
 
 @Configuration
 @EnableConfigurationProperties(FactusProperties.class)

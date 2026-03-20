@@ -1,4 +1,4 @@
-package com.factus.api.dtos.request;
+package com.factus.api.presentation.dtos.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

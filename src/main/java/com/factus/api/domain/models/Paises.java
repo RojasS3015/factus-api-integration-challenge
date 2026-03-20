@@ -1,4 +1,4 @@
-package com.factus.api.models;
+package com.factus.api.domain.models;
 
 import java.util.List;
 

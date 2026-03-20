@@ -1,4 +1,4 @@
-package com.factus.api.dtos.common;
+package com.factus.api.presentation.dtos.common;
 
 import lombok.Data;
 

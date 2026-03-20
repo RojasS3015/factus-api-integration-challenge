@@ -1,7 +1,7 @@
-package com.factus.api.dtos.response;
+package com.factus.api.presentation.dtos.response;
 
-import com.factus.api.dtos.common.TributeDataDTO;
-import com.factus.api.dtos.common.UnitMeasureDTO;
+import com.factus.api.presentation.dtos.common.TributeDataDTO;
+import com.factus.api.presentation.dtos.common.UnitMeasureDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.factus.api.exception;
+package com.factus.api.infrastructure.exception;
 
 // Archivo: FactusClientException.java
 public class FactusClientException extends RuntimeException {

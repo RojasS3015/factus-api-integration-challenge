@@ -1,11 +1,14 @@
-package com.factus.api.controller;
+package com.factus.api.presentation.controller;
 
-import com.factus.api.dtos.request.FacturaRequest;
-import com.factus.api.dtos.response.FacturaLegalDTO;
-import com.factus.api.models.*;
-import com.factus.api.config.AuthToken;
-import com.factus.api.service.AuthService;
-import com.factus.api.service.FacturarService;
+import com.factus.api.infrastructure.config.AuthToken;
+import com.factus.api.presentation.dtos.request.FacturaRequest;
+import com.factus.api.presentation.dtos.response.FacturaLegalDTO;
+import com.factus.api.app.service.AuthService;
+import com.factus.api.app.usecase.CatalogosUseCase;
+import com.factus.api.app.usecase.CrearFacturaUseCase;
+import com.factus.api.app.usecase.ObtenerFacturasUseCase;
+import com.factus.api.app.usecase.ObtenerRangosUseCase;
+import com.factus.api.domain.models.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,30 +22,42 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Factus API Controller", description = "Endpoints para la gestión de facturación electrónica e integración con Factus")
 public class FactusController {
     
-    private final FacturarService facturarService;
-    private final AuthService oauthService;
+    private final CrearFacturaUseCase crearFacturaUseCase;
+    private final ObtenerFacturasUseCase obtenerFacturasUseCase;
+    private final CatalogosUseCase catalogosUseCase;
+    private final ObtenerRangosUseCase obtenerRangosUseCase;
+    private final AuthService authService;
 
-    public FactusController(FacturarService facturarService, AuthService oauthService) {
-        this.facturarService = facturarService;
-        this.oauthService = oauthService;
-    }
+    public FactusController(
+    CrearFacturaUseCase crearFacturaUseCase,
+    ObtenerFacturasUseCase obtenerFacturasUseCase,
+    CatalogosUseCase catalogosUseCase,
+    ObtenerRangosUseCase obtenerRangosUseCase,
+    AuthService authService
+) {
+    this.crearFacturaUseCase = crearFacturaUseCase;
+    this.obtenerFacturasUseCase = obtenerFacturasUseCase;
+    this.catalogosUseCase = catalogosUseCase;
+    this.obtenerRangosUseCase = obtenerRangosUseCase;
+    this.authService = authService;
+}
 
     @Operation(summary = "Obtener Token de Acceso", description = "Realiza el login inicial para obtener el Bearer Token de Factus.")
     @GetMapping("/outh/token/obtener")
     public Mono<AuthToken> getLogin(){
-        return oauthService.login();
+        return authService.login();
     }
 
     @Operation(summary = "Refrescar Token", description = "Utiliza el refresh_token para obtener una nueva sesión sin necesidad de credenciales.")
     @GetMapping("/outh/token/refreshtoken/{refreshToken}")
     public Mono<AuthToken> getRefreshTokem(@PathVariable String refreshToken){
-        return oauthService.getRefreshToken(refreshToken);
+        return authService.getRefreshToken(refreshToken);
     }
 
     @Operation(summary = "Listar rangos de numeración", description = "Obtiene los prefijos y rangos de facturación autorizados por la DIAN.")
     @GetMapping("/v1/numbering-ranges")
     public Mono<String> getNumberingRanges() {
-        return facturarService.getNumberingRanges();
+        return obtenerRangosUseCase.ejecutar();
     }
 
     @Operation(
@@ -55,7 +70,7 @@ public class FactusController {
     )
     @PostMapping("/validate")
     public Mono<FacturaLegalDTO> getFacturaCrear(@Valid @RequestBody FacturaRequest facture){
-        return facturarService.getCreateFacture(facture);
+        return crearFacturaUseCase.ejecutar(facture);
     }
 
     @Operation(summary = "Filtrar facturas", description = "Busca facturas emitidas aplicando filtros como identificación o estado.")
@@ -68,34 +83,34 @@ public class FactusController {
         @Parameter(description = "Código de referencia interno") @RequestParam(required = false) String reference_code,
         @Parameter(description = "Estado (ej: 0 para borrador)") @RequestParam(required = false) String status) {
         
-        return facturarService.getVerFacturasYfiltrar(identification, names, number, prefix, reference_code, status);
+        return obtenerFacturasUseCase.ejecutar(identification, names, number, prefix, reference_code, status);
     }
 
     @Operation(summary = "Obtener municipios", description = "Consulta el catálogo oficial de municipios de Colombia.")
     @GetMapping("/municipios")
     public Mono<Municipalities> getMuncipios(
         @Parameter(description = "Nombre del municipio para filtrar") @RequestParam(required = false) String name) {
-        return facturarService.getMunicipiosFiltrar(name);
+        return catalogosUseCase.municipios(name);
     }
     
     @Operation(summary = "Obtener tributos", description = "Listado de impuestos aplicables (IVA, Retenciones, etc).")
     @GetMapping("/tributos")
     public Mono<Tributos> getObtenerTributos(
         @Parameter(description = "Nombre del tributo") @RequestParam(required = false) String name) {
-        return facturarService.getTributos(name);
+        return catalogosUseCase.tributos(name);
     }
 
     @Operation(summary = "Obtener países", description = "Catálogo internacional de países.")
     @GetMapping("/paises")
     public Mono<Paises> getPaisesYfiltrar(
         @Parameter(description = "Nombre del país") @RequestParam(required = false) String name){
-        return facturarService.getPaises(name);
+        return catalogosUseCase.paises(name);
     }   
 
     @Operation(summary = "Unidades de medida", description = "Listado de unidades (Unidad, Kilogramo, etc) para los ítems de factura.")
     @GetMapping("measurement-units")
     public Mono<UnidadesDeMedida> getUnidadesDeMedidaFiltrar(
         @Parameter(description = "Nombre de la unidad") @RequestParam(required = false) String name){
-        return facturarService.getUnidadesDeMedida(name);
+        return catalogosUseCase.unidades(name);
     }
 }

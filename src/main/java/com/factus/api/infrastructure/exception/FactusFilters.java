@@ -1,4 +1,4 @@
-package com.factus.api.exception;
+package com.factus.api.infrastructure.exception;
 
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 

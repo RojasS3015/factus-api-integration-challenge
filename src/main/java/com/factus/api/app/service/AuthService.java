@@ -1,12 +1,12 @@
-package com.factus.api.service;
+package com.factus.api.app.service;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.factus.api.config.FactusProperties;
-import com.factus.api.config.AuthToken;
+import com.factus.api.infrastructure.config.AuthToken;
+import com.factus.api.infrastructure.config.FactusProperties;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

@@ -1,4 +1,4 @@
-package com.factus.api.dtos.response;
+package com.factus.api.presentation.dtos.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

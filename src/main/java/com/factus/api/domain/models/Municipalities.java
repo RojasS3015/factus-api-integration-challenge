@@ -1,8 +1,8 @@
-package com.factus.api.models;
+package com.factus.api.domain.models;
 
 import java.util.List;
 
-import com.factus.api.dtos.common.MunicipiosDataDTO;
+import com.factus.api.presentation.dtos.common.MunicipiosDataDTO;
 
 import lombok.Data;
 
