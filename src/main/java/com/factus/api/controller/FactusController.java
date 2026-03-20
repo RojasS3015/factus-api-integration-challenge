@@ -13,6 +13,7 @@ import com.factus.api.config.AuthToken;
 import com.factus.api.service.AuthService;
 import com.factus.api.service.FacturarService;
 
+import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +58,7 @@ public class FactusController {
 
     //Crear y validar factura
     @PostMapping("/validate")
-    public Mono<FacturaResponse> getFacturaCrear(@RequestBody FacturaRequest facture){
+    public Mono<FacturaResponse> getFacturaCrear(@Valid @RequestBody FacturaRequest facture){
 
         return facturarService.getFacture(facture);
     }

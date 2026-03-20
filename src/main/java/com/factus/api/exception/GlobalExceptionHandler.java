@@ -13,10 +13,16 @@ import com.factus.api.dtos.response.ErrorResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    // Spring inyecta el ObjectMapper configurado automáticamente
+    public GlobalExceptionHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @ExceptionHandler(FactusClientException.class)
     public ResponseEntity<ErrorResponse> handleFactusClientException(FactusClientException ex){
@@ -54,5 +60,23 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+    // Este método captura los errores de @Valid en WebFlux
+    @ExceptionHandler(org.springframework.web.bind.support.WebExchangeBindException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(org.springframework.web.bind.support.WebExchangeBindException ex) {
+        List<String> detalles = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .toList();
+
+        ErrorResponse error = new ErrorResponse(
+                "VALIDATION_ERROR",
+                "Los datos de entrada no cumplen con los requisitos",
+                detalles,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }
