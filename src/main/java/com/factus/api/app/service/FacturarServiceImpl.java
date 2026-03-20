@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.factus.api.client.FactusClient;
 import com.factus.api.dtos.request.FacturaRequest;
+import com.factus.api.dtos.response.FacturaLegalDTO;
 import com.factus.api.dtos.response.FacturaResponse;
 import com.factus.api.models.Municipalities;
 import com.factus.api.models.Paises;
@@ -37,16 +38,35 @@ public class FacturarServiceImpl implements FacturarService{
 
     }
 
-    public Mono<FacturaResponse> getCreateFacture(FacturaRequest facture) {
-        // Log de intención: Corto y con dato clave
+    public Mono<FacturaLegalDTO> getCreateFacture(FacturaRequest facture) {
         log.info("Validando factura en Factus. Ref: {}", facture.getReferenceCode());
 
         return factusClient.post(
-            uri -> uri.path("/v1/bills/validate")
-            .build(), facture, FacturaResponse.class, "Factura Creada OK"
-        );
+            uri -> uri.path("/v1/bills/validate").build(), 
+            facture, 
+            FacturaResponse.class, 
+            "Factura Creada OK"
+        )
+        .map(response -> {
+             FacturaLegalDTO legal = new FacturaLegalDTO();
+    
+             // 1. Entramos a la "caja" Data
+            if (response.getData() != null && response.getData().getBill() != null) {
+        
+             // 2. Los datos legales están DENTRO de Bill
+             var billData = response.getData().getBill();
+        
+             legal.setNumeroFactura(billData.getNumber());
+             legal.setCufe(billData.getCufe());
+             legal.setPublicUrl(billData.getPublicUrl());
     }
-
+    
+            legal.setEstado(response.getStatus());
+            legal.setMensaje(response.getMessage());
+    
+    return legal;
+});
+    }
     //Ver y Filtrar Facturas
     public Mono<VerYfiltrarFacturas> getVerFacturasYfiltrar(
         String identification,

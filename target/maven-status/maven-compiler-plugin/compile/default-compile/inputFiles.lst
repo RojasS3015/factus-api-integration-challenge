@@ -21,6 +21,7 @@ G:\demo\src\main\java\com\factus\api\dtos\response\CustomerResponse.java
 G:\demo\src\main\java\com\factus\api\dtos\response\DataResponse.java
 G:\demo\src\main\java\com\factus\api\dtos\response\Document.java
 G:\demo\src\main\java\com\factus\api\dtos\response\ErrorResponse.java
+G:\demo\src\main\java\com\factus\api\dtos\response\FacturaLegalDTO.java
 G:\demo\src\main\java\com\factus\api\dtos\response\FacturaResponse.java
 G:\demo\src\main\java\com\factus\api\dtos\response\ItemResponse.java
 G:\demo\src\main\java\com\factus\api\dtos\response\LegalOrganization.java

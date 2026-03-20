@@ -69,4 +69,8 @@ public class Bill {
 
     @JsonProperty("payment_method")
     private PaymentMethod paymentMethod;
+
+    // Cambia esto en Bill.java
+    @JsonProperty("public_url")
+    private String publicUrl;
 }

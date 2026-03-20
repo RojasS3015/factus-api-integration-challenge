@@ -1,7 +1,7 @@
 package com.factus.api.service;
 
 import com.factus.api.dtos.request.FacturaRequest;
-import com.factus.api.dtos.response.FacturaResponse;
+import com.factus.api.dtos.response.FacturaLegalDTO;
 import com.factus.api.models.Municipalities;
 import com.factus.api.models.Paises;
 import com.factus.api.models.Tributos;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public interface FacturarService {
     Mono<String> getNumberingRanges();
 
-    Mono<FacturaResponse> getCreateFacture(FacturaRequest facture);
+    Mono<FacturaLegalDTO> getCreateFacture(FacturaRequest facture);
 
     Mono<VerYfiltrarFacturas> getVerFacturasYfiltrar(
         String identification,

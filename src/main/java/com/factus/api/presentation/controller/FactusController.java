@@ -1,7 +1,7 @@
 package com.factus.api.controller;
 
 import com.factus.api.dtos.request.FacturaRequest;
-import com.factus.api.dtos.response.FacturaResponse;
+import com.factus.api.dtos.response.FacturaLegalDTO;
 import com.factus.api.models.*;
 import com.factus.api.config.AuthToken;
 import com.factus.api.service.AuthService;
@@ -54,7 +54,7 @@ public class FactusController {
         }
     )
     @PostMapping("/validate")
-    public Mono<FacturaResponse> getFacturaCrear(@Valid @RequestBody FacturaRequest facture){
+    public Mono<FacturaLegalDTO> getFacturaCrear(@Valid @RequestBody FacturaRequest facture){
         return facturarService.getCreateFacture(facture);
     }
 
