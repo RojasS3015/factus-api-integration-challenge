@@ -39,6 +39,14 @@ public class FactusClient {
                 .transform(mono -> applyCommonBehavior(mono, logMessage));
     }
 
+    public <T> Mono<T> delete(Function<UriBuilder, URI> urFunction, Class<T> responseType, String logMessage){
+        return webClient.delete()
+                .uri(urFunction)
+                .retrieve()
+                .bodyToMono(responseType)
+                .transform(mono -> applyCommonBehavior(mono, logMessage));
+    }
+
     // AQUÍ ESTÁ EL SECRETO: Una sola vez para toda la app
     private <T> Mono<T> applyCommonBehavior(Mono<T> mono, String successMessage) {
         return mono
