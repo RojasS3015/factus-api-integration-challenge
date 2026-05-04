@@ -11,7 +11,7 @@
 
     <groupId>com.factus</groupId>
     <artifactId>demo</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>api-factus</name>
     <description>Proyecto de integración reactiva con API Factus</description>
 
