@@ -18,7 +18,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("API de Facturación Electrónica - Factus")
-                        .version("1.0")
+                        .version("1.1.0")
                         .description("Servicio reactivo para la gestión y validación de facturas con la API de Factus.")
                         .contact(new Contact()
                                 .name("RojasS3015")
