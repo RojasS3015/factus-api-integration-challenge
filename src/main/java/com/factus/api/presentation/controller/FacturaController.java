@@ -1,5 +1,6 @@
 package com.factus.api.presentation.controller;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import com.factus.api.app.usecase.CrearFacturaUseCase;
 import com.factus.api.app.usecase.EliminarFacturaUseCase;
@@ -21,6 +24,7 @@ import com.factus.api.presentation.dtos.response.FacturaLegalDTO;
 import reactor.core.publisher.Mono;
 
 @RestController
+@Validated
 @RequestMapping("/api/facturas")
 public class FacturaController {
 
@@ -39,7 +43,7 @@ public class FacturaController {
     }
 
     @PostMapping
-    public Mono<FacturaLegalDTO> crear(@RequestBody FacturaRequest request) {
+    public Mono<FacturaLegalDTO> crear(@Valid @RequestBody FacturaRequest request) {
         return crearFacturaUseCase.ejecutar(request);
     }
 
