@@ -13,7 +13,10 @@ import com.factus.api.presentation.dtos.response.ErrorResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     
@@ -26,7 +29,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FactusClientException.class)
     public ResponseEntity<ErrorResponse> handleFactusClientException(FactusClientException ex){
-        System.out.println("JSON crudo que llegó de Factus: " + ex.getMessage());
+        log.debug("Factus client error payload: {}", ex.getMessage());
         List<String> detalles = new ArrayList<>();
         //ingresamos la excepcion de FactusClientException.getMesaage
         String errorRaw = ex.getMessage();
@@ -78,5 +81,19 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(FactusServerException.class)
+    public ResponseEntity<ErrorResponse> handleFactusServerException(FactusServerException ex) {
+        log.warn("Factus server error: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+                "FACTUS_SERVER_ERROR",
+                ex.getMessage(),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
     }
 }
